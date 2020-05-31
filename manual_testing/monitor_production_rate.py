@@ -45,6 +45,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--broker", help="Address for the Kafka broker", default="localhost:9092")
     parser.add_argument("--topic", help="Monitor high offset of this topic", default="forwarder_output")
+    parser.add_argument("--update-period", help="Update plot every X seconds", default=5)
     args = parser.parse_args()
 
     # Create figure for plotting
@@ -58,6 +59,6 @@ if __name__ == "__main__":
 
     current_high_offset = 0
 
-    ten_seconds = 10000
-    ani = animation.FuncAnimation(fig, append_point_to_plot, fargs=(x_values, y_values), interval=ten_seconds)
+    update_period_ms = args.update_period * 1000
+    ani = animation.FuncAnimation(fig, append_point_to_plot, fargs=(x_values, y_values), interval=update_period_ms)
     plt.show()

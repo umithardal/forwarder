@@ -66,7 +66,7 @@ class LazyCounter(object):
         op.done()
 
 
-def configure_forwarder(pv_name: str, broker: str, topic: str):
+def configure_forwarder(pv_name: str, broker: str, topic: str, config_topic: str):
     config_message = (
         '{'
         '  "cmd": "add",'
@@ -83,7 +83,7 @@ def configure_forwarder(pv_name: str, broker: str, topic: str):
         '}'
     )
     producer = create_producer("localhost:9092")
-    producer.produce("forwarder_config", config_message.encode("utf8"))
+    producer.produce(config_topic, config_message.encode("utf8"))
     producer.close()
 
 
@@ -92,6 +92,7 @@ if __name__ == "__main__":
     parser.add_argument("--pv-name-suffix", help="PV name will be pva:counter_<SUFFIX>", default=1)
     parser.add_argument("--broker", help="Address for the Kafka broker", default="localhost:9092")
     parser.add_argument("--topic", help="Monitor high offset of this topic", default="forwarder_output")
+    parser.add_argument("--config-topic", help="Config topic Forwarder is listening to", default="forwarder_config")
     args = parser.parse_args()
 
     pv = SharedPV(handler=LazyCounter())
@@ -99,7 +100,7 @@ if __name__ == "__main__":
 
     with Server(providers=[{pv_name: pv}]):
         try:
-            configure_forwarder(pv_name, args.broker, args.topic)
+            configure_forwarder(pv_name, args.broker, args.topic, args.config_topic)
             cothread.WaitForQuit()
         except KeyboardInterrupt:
             pass
