@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from confluent_kafka import Consumer
 import argparse
+from uuid import uuid4
 
 
 def append_point_to_plot(i, times, production_rate):
@@ -22,34 +23,34 @@ def append_point_to_plot(i, times, production_rate):
         ax.plot(times, production_rate)
         plt.xticks(rotation=45, ha='right')
         plt.subplots_adjust(bottom=0.30)
-        plt.ylabel('Messages per interval')
+        plt.ylabel('Messages per second')
 
 
 def create_consumer(broker: str) -> Consumer:
-    conf = {'bootstrap.servers': broker, 'group.id': 'offset_monitor', 'session.timeout.ms': 6000,
+    conf = {'bootstrap.servers': broker, 'group.id': f"{uuid4()}", 'session.timeout.ms': 6000,
             'auto.offset.reset': 'latest', 'max.in.flight.requests.per.connection': 1, 'queued.min.messages': 1,
             'enable.auto.offset.store': False, 'enable.auto.commit': False}
     return Consumer(conf)
 
 
 def get_offset_change():
-    global current_high_offset
+    global current_high_offset, interval_s
     consumer.subscribe([args.topic])
     msg = consumer.poll(timeout=1.0)
     if msg is None or msg.error():
         return None
     else:
         new_offset = msg.offset()
-        offset_change = new_offset - current_high_offset
+        offset_change_per_s = (new_offset - current_high_offset) / interval_s
         current_high_offset = new_offset
-        return offset_change
+        return offset_change_per_s
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--broker", help="Address for the Kafka broker", default="localhost:9092")
     parser.add_argument("--topic", help="Monitor high offset of this topic", default="forwarder_output")
-    parser.add_argument("--update-period", help="Update plot every X seconds", default=10)
+    parser.add_argument("--update-period", help="Update plot every X seconds", default=3)
     args = parser.parse_args()
 
     # Create figure for plotting
@@ -62,6 +63,7 @@ if __name__ == "__main__":
     consumer = create_consumer(args.broker)
 
     current_high_offset = 0
+    interval_s = args.update_period
 
     update_period_ms = args.update_period * 1000
     ani = animation.FuncAnimation(fig, append_point_to_plot, fargs=(x_values, y_values), interval=update_period_ms)
