@@ -7,7 +7,7 @@ import argparse
 from forwarder.kafka.kafka_helpers import create_producer
 
 _log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 types = {
     False: NTScalar("I"),
@@ -89,7 +89,7 @@ def configure_forwarder(pv_name: str, broker: str, topic: str, config_topic: str
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pv-name-suffix", help="PV name will be pva:counter_<SUFFIX>", default=1)
+    parser.add_argument("--suffix", help="PV name will be pva:counter_<SUFFIX>", default=1)
     parser.add_argument("--broker", help="Address for the Kafka broker", default="localhost:9092")
     parser.add_argument("--topic", help="Monitor high offset of this topic", default="forwarder_output")
     parser.add_argument("--config-topic", help="Config topic Forwarder is listening to", default="forwarder_config")
