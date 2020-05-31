@@ -15,9 +15,9 @@ def append_point_to_plot(i, times, production_rate):
         times.append(dt.datetime.now().strftime('%H:%M:%S.%f'))
         production_rate.append(offset_change)
 
-        # Truncate x and y lists to 20 items
-        # times = times[-20:]
-        # production_rate = production_rate[-20:]
+        # Truncate x and y lists to 30 items
+        times = times[-30:]
+        production_rate = production_rate[-30:]
 
         ax.clear()
         ax.plot(times, production_rate)

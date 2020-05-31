@@ -1,0 +1,4 @@
+1. Start Kafka cluster
+2. Start Forwarder
+3. Start monitor_production_rate.py
+4. Start create_and_configure_pva_pv.py (repeat and notice steps on monitor plot)
