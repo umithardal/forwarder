@@ -98,9 +98,9 @@ if __name__ == "__main__":
     parser.add_argument("--config-topic", help="Config topic Forwarder is listening to", default="forwarder_config")
     args = parser.parse_args()
 
-    # Start up 10 PVs each 100Hz update freq
+    # Start up 100 PVs each 100Hz update freq
     pvs: Dict[str, SharedPV] = {}
-    for pv_num in range(20):
+    for pv_num in range(100):
         pv_name = f"pva:counter_{args.suffix}_{pv_num}"
         pvs[pv_name] = SharedPV(handler=LazyCounter(0.01))
 
