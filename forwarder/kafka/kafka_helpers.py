@@ -7,6 +7,7 @@ from streaming_data_types.fbschemas.logdata_f142.AlarmSeverity import AlarmSever
 import uuid
 import numpy as np
 from typing import Optional, Tuple
+from forwarder.serialise import serialise_f142_long, serialise_f142_double
 
 
 def create_producer(broker_address: str) -> KafkaProducer:
@@ -57,18 +58,23 @@ def publish_f142_message(
     :param alarm_status:
     :param alarm_severity:
     """
-    if alarm_status is None:
-        f142_message = serialise_f142(
-            value=data, source_name=source_name, timestamp_unix_ns=timestamp_ns,
-        )
+    if data.dtype == np.float64:
+        f142_message = serialise_f142_double(data.item(), source_name, timestamp_ns)
+    elif data.dtype == np.int64:
+        f142_message = serialise_f142_long(data.item(), source_name, timestamp_ns)
     else:
-        f142_message = serialise_f142(
-            value=data,
-            source_name=source_name,
-            timestamp_unix_ns=timestamp_ns,
-            alarm_status=alarm_status,
-            alarm_severity=alarm_severity,
-        )
+        if alarm_status is None:
+            f142_message = serialise_f142(
+                value=data, source_name=source_name, timestamp_unix_ns=timestamp_ns,
+            )
+        else:
+            f142_message = serialise_f142(
+                value=data,
+                source_name=source_name,
+                timestamp_unix_ns=timestamp_ns,
+                alarm_status=alarm_status,
+                alarm_severity=alarm_severity,
+            )
     producer.produce(topic, f142_message, key=source_name)
 
 
